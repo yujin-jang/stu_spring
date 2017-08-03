@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/mvc"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<!-- DispatcherServlet Context: defines this servlet's request-processing 
+		infrastructure -->
+
+	<!-- Enables the Spring MVC @Controller programming model -->
+	<annotation-driven />
+
+	<!-- Handles HTTP GET requests for /resources/** by efficiently serving 
+		up static resources in the ${webappRoot}/resources directory -->
+	<resources mapping="/resources/**" location="/resources/" />
+
+	<!-- Resolves views selected for rendering by @Controllers to .jsp resources 
+		in the /WEB-INF/views directory -->
+	<beans:bean
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<beans:property name="prefix" value="/WEB-INF/views/" />
+		<beans:property name="suffix" value=".jsp" />
+	</beans:bean>
+	
+	<!-- commons-fileupload : 파일업로드로 들어오는 데이터를 처리하는 객체 -->
+	<!-- 웹과 관련있기 때문에 servlet-context.xml을 이용해서 설정 -->
+	<beans:bean id="multipartResolver"
+		class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<!-- 1024바이트 = 1KB, 1024KB = 1MB, 10MB= 1024*1024*10=10485760 -->
+		<beans:property name="maxUploadSize" value="10485760"></beans:property>
+	</beans:bean>
+
+	<!-- 업로드된 파일의 저장경로 -->
+	<beans:bean id="uploadPath" class="java.lang.String">
+		<beans:constructor-arg value="D:\file\upload"></beans:constructor-arg>
+	</beans:bean>
+	
+	<!-- 로그인 여부 확인 인터셉터 -->
+	<beans:bean id="authInterceptor" class="org.zerock.interceptor.AuthInterceptor">
+	</beans:bean>
+	<interceptors>
+		<interceptor>
+			<!-- 글쓰기, 수정, 삭제시 로그인 여부 체크 -->
+			<mapping path="/sboard/register"/>
+			<mapping path="/sboard/modifyPage"/>
+			<mapping path="/sboard/removePage"/>
+			<beans:ref bean="authInterceptor"/>
+		</interceptor>
+	</interceptors>
+	
+	
+	<!-- 로그인 정보 세션 저장 인터셉터 -->
+	<beans:bean id="loginInterceptor" class="org.zerock.interceptor.LoginInterceptor">
+	</beans:bean>
+	<interceptors>
+		<interceptor>
+			<mapping path="/user/loginPost"/>
+			<beans:ref bean="loginInterceptor"/>
+		</interceptor>
+	</interceptors>
+	
+	<!-- 샘플인터셉터 -->
+	<beans:bean id="sampleInterceptor" class="org.zerock.interceptor.SampleInterceptor">
+	</beans:bean>
+	<!-- <interceptors>태그 사용하려면 네임스페이스의 mvc 설정 추가 필요 -->
+	<interceptors>
+		<interceptor>
+			<!-- mapping에는 원하는 URI를 지정 -->
+			<mapping path="/doA"/>
+			<mapping path="/doB"/>
+			<!-- '/doA'와 '/doB' 경로를 호출할 때 sampleInterceptor가 동작 -->
+			<beans:ref bean="sampleInterceptor"/>
+		</interceptor>
+	</interceptors>
+	
+	<context:component-scan base-package="org.zerock.controller" />
+
+</beans:beans>
